@@ -9,6 +9,7 @@ import {
   Flame,
   LogOut,
   Medal,
+  Menu,
   Play,
   RotateCcw,
   Search,
@@ -17,6 +18,7 @@ import {
   TrendingUp,
   Trophy,
   User,
+  X,
   Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -242,106 +244,188 @@ function AppHeader({
   onGoHome,
   walletAddress,
 }: { onGoHome: () => void; walletAddress?: string }) {
-  return (
-    <header className="sticky top-[70px] z-40 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 border-b border-purple-700 shadow-lg">
-      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-3">
-        {/* Brand */}
-        <button
-          type="button"
-          onClick={onGoHome}
-          className="flex items-center gap-2 shrink-0"
-          data-ocid="header.link"
-        >
-          <span className="text-3xl">🚀</span>
-          <span className="font-black text-xl text-white leading-none">
-            Math<span className="text-yellow-300">Whiz</span>
-            <span className="text-pink-200"> Kid</span>
-          </span>
-          <span className="text-xs hidden sm:flex gap-0.5 items-center ml-1">
-            {["➕", "➖", "✖️", "➗"].map((s) => (
-              <span key={s} className="opacity-50">
-                {s}
-              </span>
-            ))}
-          </span>
-        </button>
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-        {/* Nav */}
-        <nav className="hidden md:flex items-center gap-1 ml-4 flex-1">
-          <Button
-            size="sm"
-            className="rounded-full px-4 font-bold text-sm"
-            onClick={onGoHome}
-            data-ocid="nav.play_now.button"
+  const closeMobileMenu = () => setMobileMenuOpen(false);
+
+  return (
+    <>
+      <header className="sticky top-[70px] z-40 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 border-b border-purple-700 shadow-lg">
+        <div className="max-w-[1000px] mx-auto px-4 h-16 flex items-center gap-3">
+          {/* Brand */}
+          <button
+            type="button"
+            onClick={() => {
+              onGoHome();
+              closeMobileMenu();
+            }}
+            className="flex items-center gap-2 shrink-0"
+            data-ocid="header.link"
           >
-            <Play className="h-3 w-3 mr-1" /> Play Now
-          </Button>
-          {["Practice", "Games", "Challenges", "Reports", "Parents"].map(
-            (label) => (
+            <span className="text-3xl">🚀</span>
+            <span className="font-black text-xl text-white leading-none">
+              Math<span className="text-yellow-300">Whiz</span>
+              <span className="text-pink-200"> Kid</span>
+            </span>
+            <span className="text-xs hidden sm:flex gap-0.5 items-center ml-1">
+              {["➕", "➖", "✖️", "➗"].map((s) => (
+                <span key={s} className="opacity-50">
+                  {s}
+                </span>
+              ))}
+            </span>
+          </button>
+
+          {/* Nav — desktop only */}
+          <nav className="hidden md:flex items-center gap-1 ml-4 flex-1">
+            <Button
+              size="sm"
+              className="rounded-full px-4 font-bold text-sm"
+              onClick={onGoHome}
+              data-ocid="nav.play_now.button"
+            >
+              <Play className="h-3 w-3 mr-1" /> Play Now
+            </Button>
+            {["Practice", "Games", "Challenges", "Reports", "Parents"].map(
+              (label) => (
+                <button
+                  type="button"
+                  key={label}
+                  className="px-3 py-1.5 text-sm font-semibold text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+                  data-ocid={`nav.${label.toLowerCase()}.link`}
+                >
+                  {label}
+                </button>
+              ),
+            )}
+          </nav>
+
+          {/* Right controls */}
+          <div className="flex items-center gap-2 ml-auto shrink-0">
+            <button
+              type="button"
+              className="p-2 rounded-full hover:bg-white/10 transition-colors hidden md:flex"
+              aria-label="Search"
+              data-ocid="header.search.button"
+            >
+              <Search className="h-4 w-4 text-white/70" />
+            </button>
+            <button
+              type="button"
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors text-sm font-semibold text-white/70"
+              data-ocid="header.parent_portal.button"
+            >
+              <User className="h-4 w-4" /> Parent Portal
+            </button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full border-white/30 text-white font-bold text-sm hidden md:flex hover:bg-white/10"
+              data-ocid="header.logout.button"
+            >
+              <LogOut className="h-3 w-3 mr-1" /> Logout
+            </Button>
+            {/* Profile pill */}
+            <button
+              type="button"
+              className="flex items-center gap-2 bg-white/15 rounded-full px-3 py-1.5 cursor-pointer hover:bg-white/25 transition-colors"
+              data-ocid="header.profile.button"
+            >
+              <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-black">
+                {walletAddress ? walletAddress.slice(0, 2).toUpperCase() : "P"}
+              </div>
+              <div className="hidden sm:block">
+                <div className="text-xs font-black leading-none text-white">
+                  {walletAddress ? `${walletAddress.slice(0, 6)}…` : "Player"}{" "}
+                  (L7)
+                </div>
+                <div className="flex gap-0.5 mt-0.5">
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      className="h-2.5 w-2.5 fill-amber-400 text-amber-400"
+                    />
+                  ))}
+                </div>
+              </div>
+            </button>
+            {/* Hamburger — mobile only */}
+            <button
+              type="button"
+              className="md:hidden p-2 rounded-full hover:bg-white/10 transition-colors text-white"
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              data-ocid="header.hamburger.button"
+            >
+              {mobileMenuOpen ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <Menu className="h-5 w-5" />
+              )}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile dropdown menu */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.18 }}
+            className="fixed left-0 right-0 z-30 md:hidden bg-gradient-to-b from-indigo-700 via-purple-700 to-pink-600 shadow-xl border-b border-purple-800"
+            style={{ top: "calc(70px + 64px)" }}
+            data-ocid="header.mobile_menu.panel"
+          >
+            <nav className="max-w-[1000px] mx-auto px-4 py-4 flex flex-col gap-2">
+              <Button
+                size="default"
+                className="w-full rounded-full font-bold justify-start"
+                onClick={() => {
+                  onGoHome();
+                  closeMobileMenu();
+                }}
+                data-ocid="mobile_nav.play_now.button"
+              >
+                <Play className="h-4 w-4 mr-2" /> Play Now
+              </Button>
+              {["Practice", "Games", "Challenges", "Reports", "Parents"].map(
+                (label) => (
+                  <button
+                    type="button"
+                    key={label}
+                    className="w-full text-left px-4 py-3 text-sm font-semibold text-white/80 hover:text-white rounded-xl hover:bg-white/10 transition-colors"
+                    onClick={closeMobileMenu}
+                    data-ocid={`mobile_nav.${label.toLowerCase()}.link`}
+                  >
+                    {label}
+                  </button>
+                ),
+              )}
+              <div className="border-t border-white/20 my-1" />
               <button
                 type="button"
-                key={label}
-                className="px-3 py-1.5 text-sm font-semibold text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
-                data-ocid={`nav.${label.toLowerCase()}.link`}
+                className="w-full text-left flex items-center gap-2 px-4 py-3 text-sm font-semibold text-white/80 hover:text-white rounded-xl hover:bg-white/10 transition-colors"
+                onClick={closeMobileMenu}
+                data-ocid="mobile_nav.parent_portal.button"
               >
-                {label}
+                <User className="h-4 w-4" /> Parent Portal
               </button>
-            ),
-          )}
-        </nav>
-
-        {/* Right controls */}
-        <div className="flex items-center gap-2 ml-auto shrink-0">
-          <button
-            type="button"
-            className="p-2 rounded-full hover:bg-white/10 transition-colors"
-            aria-label="Search"
-            data-ocid="header.search.button"
-          >
-            <Search className="h-4 w-4 text-white/70" />
-          </button>
-          <button
-            type="button"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors text-sm font-semibold text-white/70"
-            data-ocid="header.parent_portal.button"
-          >
-            <User className="h-4 w-4" /> Parent Portal
-          </button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-full border-white/30 text-white font-bold text-sm hidden sm:flex hover:bg-white/10"
-            data-ocid="header.logout.button"
-          >
-            <LogOut className="h-3 w-3 mr-1" /> Logout
-          </Button>
-          {/* Profile pill */}
-          <button
-            type="button"
-            className="flex items-center gap-2 bg-white/15 rounded-full px-3 py-1.5 cursor-pointer hover:bg-white/25 transition-colors"
-            data-ocid="header.profile.button"
-          >
-            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-black">
-              {walletAddress ? walletAddress.slice(0, 2).toUpperCase() : "P"}
-            </div>
-            <div className="hidden sm:block">
-              <div className="text-xs font-black leading-none text-white">
-                {walletAddress ? `${walletAddress.slice(0, 6)}…` : "Player"}{" "}
-                (L7)
-              </div>
-              <div className="flex gap-0.5 mt-0.5">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <Star
-                    key={s}
-                    className="h-2.5 w-2.5 fill-amber-400 text-amber-400"
-                  />
-                ))}
-              </div>
-            </div>
-          </button>
-        </div>
-      </div>
-    </header>
+              <button
+                type="button"
+                className="w-full text-left flex items-center gap-2 px-4 py-3 text-sm font-semibold text-white/80 hover:text-white rounded-xl hover:bg-white/10 transition-colors"
+                onClick={closeMobileMenu}
+                data-ocid="mobile_nav.logout.button"
+              >
+                <LogOut className="h-4 w-4" /> Logout
+              </button>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -402,7 +486,7 @@ function Dashboard({
           ))}
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 py-10 flex flex-col md:flex-row items-center gap-8 relative z-10">
+        <div className="max-w-[1000px] mx-auto px-4 py-10 flex flex-col md:flex-row items-center gap-8 relative z-10">
           {/* Mascot */}
           <motion.div
             className="shrink-0 animate-float"
@@ -468,7 +552,7 @@ function Dashboard({
       </section>
 
       {/* Main content */}
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-[1000px] mx-auto px-4 py-8 space-y-8">
         {/* Stats row */}
         <motion.div
           className="grid grid-cols-2 md:grid-cols-4 gap-4"
@@ -827,7 +911,7 @@ function Dashboard({
 
       {/* Footer */}
       <footer className="border-t border-border mt-12 bg-white">
-        <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="max-w-[1000px] mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
             <span className="text-xl">🚀</span>
             <span>MathWhiz Kid — Making Math Fun Since 2024</span>
