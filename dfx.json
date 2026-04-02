@@ -1,0 +1,39 @@
+{
+  "canisters": {
+    "backend": {
+      "main": "src/backend_extended/main.mo",
+      "type": "motoko",
+      "args": "--default-persistent-actors -no-check-ir"
+    },
+    "frontend": {
+      "dependencies": ["backend"],
+      "source": ["src/frontend/dist"],
+      "type": "assets",
+      "build": "pnpm --filter '@caffeine/template-frontend' build:skip-bindings"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "networks": {
+    "ic": {
+      "providers": ["https://icp-api.io"],
+      "type": "persistent",
+      "replica": {
+        "subnet_type": "application"
+      }
+    },
+    "local": {
+      "providers": ["http://localhost:8081"],
+      "type": "persistent",
+      "replica": {
+        "subnet_type": "application"
+      }
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

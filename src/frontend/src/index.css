@@ -1,0 +1,181 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 1rem;
+    /* Page background: #EEF6FB light sky-blue */
+    --background: 0.97 0.018 215;
+    --foreground: 0.2 0.03 240;
+    /* Cards: white */
+    --card: 1 0 0;
+    --card-foreground: 0.2 0.03 240;
+    --popover: 1 0 0;
+    --popover-foreground: 0.2 0.03 240;
+    /* Primary: #2F80ED blue */
+    --primary: 0.55 0.19 250;
+    --primary-foreground: 1 0 0;
+    /* Secondary: teal #2DD4BF */
+    --secondary: 0.79 0.13 188;
+    --secondary-foreground: 0.15 0.05 200;
+    --muted: 0.94 0.015 220;
+    --muted-foreground: 0.52 0.025 240;
+    /* Accent: orange #F59E0B */
+    --accent: 0.75 0.18 72;
+    --accent-foreground: 0.15 0.04 60;
+    --destructive: 0.62 0.24 15;
+    --destructive-foreground: 1 0 0;
+    --success: 0.72 0.2 142;
+    --success-foreground: 1 0 0;
+    --border: 0.9 0.02 220;
+    --input: 0.9 0.02 220;
+    --ring: 0.55 0.19 250;
+    /* custom */
+    --purple: 0.58 0.22 285;
+    --yellow: 0.82 0.17 80;
+    --chart-1: 0.55 0.19 250;
+    --chart-2: 0.79 0.13 188;
+    --chart-3: 0.75 0.18 72;
+    --chart-4: 0.58 0.22 285;
+    --chart-5: 0.72 0.2 142;
+    --sidebar: 1 0 0;
+    --sidebar-foreground: 0.2 0.03 240;
+    --sidebar-primary: 0.55 0.19 250;
+    --sidebar-primary-foreground: 1 0 0;
+    --sidebar-accent: 0.94 0.015 220;
+    --sidebar-accent-foreground: 0.2 0.03 240;
+    --sidebar-border: 0.9 0.02 220;
+    --sidebar-ring: 0.55 0.19 250;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Nunito", system-ui, sans-serif;
+    padding-top: 0 !important;
+  }
+}
+
+@layer utilities {
+  .text-success {
+    color: oklch(var(--success));
+  }
+  .bg-success {
+    background-color: oklch(var(--success));
+  }
+  .text-purple {
+    color: oklch(var(--purple));
+  }
+  .bg-purple {
+    background-color: oklch(var(--purple));
+  }
+  .bg-accent-yellow {
+    background-color: oklch(var(--yellow));
+  }
+  .font-nunito {
+    font-family: "Nunito", system-ui, sans-serif;
+  }
+}
+
+/* Shake animation for wrong answer */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-8px);
+  }
+  30% {
+    transform: translateX(8px);
+  }
+  45% {
+    transform: translateX(-6px);
+  }
+  60% {
+    transform: translateX(6px);
+  }
+  75% {
+    transform: translateX(-4px);
+  }
+  90% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(-20px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 oklch(0.55 0.19 250 / 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 12px oklch(0.55 0.19 250 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.55 0.19 250 / 0);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+.animate-pop {
+  animation: pop 0.3s ease-out;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+.confetti-piece {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  animation: confetti-fall linear forwards;
+  pointer-events: none;
+  z-index: 9999;
+}
