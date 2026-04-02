@@ -243,7 +243,7 @@ function AppHeader({
   walletAddress,
 }: { onGoHome: () => void; walletAddress?: string }) {
   return (
-    <header className="sticky top-[70px] z-40 bg-white border-b border-border shadow-xs">
+    <header className="sticky top-[70px] z-40 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 border-b border-purple-700 shadow-lg">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-3">
         {/* Brand */}
         <button
@@ -253,9 +253,9 @@ function AppHeader({
           data-ocid="header.link"
         >
           <span className="text-3xl">🚀</span>
-          <span className="font-black text-xl text-foreground leading-none">
-            Math<span className="text-primary">Whiz</span>
-            <span className="text-accent"> Kid</span>
+          <span className="font-black text-xl text-white leading-none">
+            Math<span className="text-yellow-300">Whiz</span>
+            <span className="text-pink-200"> Kid</span>
           </span>
           <span className="text-xs hidden sm:flex gap-0.5 items-center ml-1">
             {["➕", "➖", "✖️", "➗"].map((s) => (
@@ -281,7 +281,7 @@ function AppHeader({
               <button
                 type="button"
                 key={label}
-                className="px-3 py-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted transition-colors"
+                className="px-3 py-1.5 text-sm font-semibold text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
                 data-ocid={`nav.${label.toLowerCase()}.link`}
               >
                 {label}
@@ -294,15 +294,15 @@ function AppHeader({
         <div className="flex items-center gap-2 ml-auto shrink-0">
           <button
             type="button"
-            className="p-2 rounded-full hover:bg-muted transition-colors"
+            className="p-2 rounded-full hover:bg-white/10 transition-colors"
             aria-label="Search"
             data-ocid="header.search.button"
           >
-            <Search className="h-4 w-4 text-muted-foreground" />
+            <Search className="h-4 w-4 text-white/70" />
           </button>
           <button
             type="button"
-            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-muted transition-colors text-sm font-semibold text-muted-foreground"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors text-sm font-semibold text-white/70"
             data-ocid="header.parent_portal.button"
           >
             <User className="h-4 w-4" /> Parent Portal
@@ -310,7 +310,7 @@ function AppHeader({
           <Button
             variant="outline"
             size="sm"
-            className="rounded-full border-border font-bold text-sm hidden sm:flex"
+            className="rounded-full border-white/30 text-white font-bold text-sm hidden sm:flex hover:bg-white/10"
             data-ocid="header.logout.button"
           >
             <LogOut className="h-3 w-3 mr-1" /> Logout
@@ -318,14 +318,14 @@ function AppHeader({
           {/* Profile pill */}
           <button
             type="button"
-            className="flex items-center gap-2 bg-muted rounded-full px-3 py-1.5 cursor-pointer"
+            className="flex items-center gap-2 bg-white/15 rounded-full px-3 py-1.5 cursor-pointer hover:bg-white/25 transition-colors"
             data-ocid="header.profile.button"
           >
             <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-black">
               {walletAddress ? walletAddress.slice(0, 2).toUpperCase() : "P"}
             </div>
             <div className="hidden sm:block">
-              <div className="text-xs font-black leading-none">
+              <div className="text-xs font-black leading-none text-white">
                 {walletAddress ? `${walletAddress.slice(0, 6)}…` : "Player"}{" "}
                 (L7)
               </div>
@@ -1361,7 +1361,7 @@ function MathApp() {
 
   if (isConnecting) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background pt-[70px]">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 pt-[70px]">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{
@@ -1369,9 +1369,9 @@ function MathApp() {
             repeat: Number.POSITIVE_INFINITY,
             ease: "linear",
           }}
-          className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent"
+          className="w-12 h-12 rounded-full border-4 border-pink-400 border-t-transparent"
         />
-        <p className="text-muted-foreground font-semibold text-sm">
+        <p className="text-purple-200 font-semibold text-sm">
           Connecting to Metanet...
         </p>
       </div>
