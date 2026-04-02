@@ -243,7 +243,7 @@ function AppHeader({
   walletAddress,
 }: { onGoHome: () => void; walletAddress?: string }) {
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-border shadow-xs">
+    <header className="sticky top-[70px] z-40 bg-white border-b border-border shadow-xs">
       <div className="max-w-6xl mx-auto px-4 h-16 flex items-center gap-3">
         {/* Brand */}
         <button
@@ -375,7 +375,7 @@ function Dashboard({
     encouragingMessages[Math.floor(totalXp / 50) % encouragingMessages.length];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-[70px]">
       {/* Hero Banner */}
       <section
         className="relative overflow-hidden"
@@ -1005,7 +1005,7 @@ function GameScreen({
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col pt-[70px]">
       {/* Game top bar */}
       <div className="bg-white border-b border-border px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -1207,7 +1207,7 @@ function ResultsScreen({
               };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-10">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 pt-[70px] pb-10">
       {showConfetti && <ConfettiEffect />}
 
       <motion.div
@@ -1361,7 +1361,7 @@ function MathApp() {
 
   if (isConnecting) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background pt-[70px]">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{
