@@ -2,23 +2,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Toaster } from "@/components/ui/sonner";
 import {
+  BarChart2,
   ChevronRight,
   Clock,
   Flame,
-  LogOut,
   Medal,
-  Menu,
   Play,
   RotateCcw,
-  Search,
   Star,
   Target,
   TrendingUp,
   Trophy,
-  User,
-  X,
+  Users,
   Zap,
 } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -32,7 +30,13 @@ import {
 } from "./hooks/useQueries";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-type Screen = "dashboard" | "game" | "results";
+type Screen =
+  | "dashboard"
+  | "game"
+  | "results"
+  | "leaderboard"
+  | "stats"
+  | "parents";
 type Difficulty = "easy" | "medium" | "hard";
 type Operation = "+" | "-" | "×" | "÷";
 
@@ -60,7 +64,7 @@ interface LocalBadge {
   color: string;
 }
 
-// ─── Game Logic ───────────────────────────────────────────────────────────────
+// ─── Badge Definitions ────────────────────────────────────────────────────────
 const BADGE_DEFS: LocalBadge[] = [
   {
     id: "first_win",
@@ -92,6 +96,7 @@ const BADGE_DEFS: LocalBadge[] = [
   },
 ];
 
+// ─── Game Logic ───────────────────────────────────────────────────────────────
 function getRange(difficulty: Difficulty): number {
   if (difficulty === "easy") return 10;
   if (difficulty === "medium") return 20;
@@ -239,193 +244,93 @@ function CircularTimer({
   );
 }
 
-// ─── Header ───────────────────────────────────────────────────────────────────
-function AppHeader({
-  onGoHome,
-  walletAddress,
-}: { onGoHome: () => void; walletAddress?: string }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const closeMobileMenu = () => setMobileMenuOpen(false);
+// ─── Floating Footer Nav ──────────────────────────────────────────────────────
+function FloatingFooterNav({
+  activeScreen,
+  onNavigate,
+}: {
+  activeScreen: Screen;
+  onNavigate: (screen: Screen) => void;
+}) {
+  const tabs = [
+    {
+      id: "dashboard" as Screen,
+      icon: "🎮",
+      label: "Play",
+      ocid: "footer.play.tab",
+    },
+    {
+      id: "leaderboard" as Screen,
+      icon: "🏆",
+      label: "Top",
+      ocid: "footer.leaderboard.tab",
+    },
+    {
+      id: "stats" as Screen,
+      icon: "📊",
+      label: "Stats",
+      ocid: "footer.stats.tab",
+    },
+    {
+      id: "parents" as Screen,
+      icon: "👨‍👩‍👧",
+      label: "Parents",
+      ocid: "footer.parents.tab",
+    },
+  ];
 
   return (
-    <>
-      <header className="sticky top-[70px] z-40 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 border-b border-purple-700 shadow-lg">
-        <div className="max-w-[1000px] mx-auto px-4 h-16 flex items-center gap-3">
-          {/* Brand */}
-          <button
-            type="button"
-            onClick={() => {
-              onGoHome();
-              closeMobileMenu();
-            }}
-            className="flex items-center gap-2 shrink-0"
-            data-ocid="header.link"
-          >
-            <span className="text-3xl">🚀</span>
-            <span className="font-black text-xl text-white leading-none">
-              Math<span className="text-yellow-300">Whiz</span>
-              <span className="text-pink-200"> Kid</span>
-            </span>
-            <span className="text-xs hidden sm:flex gap-0.5 items-center ml-1">
-              {["➕", "➖", "✖️", "➗"].map((s) => (
-                <span key={s} className="opacity-50">
-                  {s}
-                </span>
-              ))}
-            </span>
-          </button>
-
-          {/* Nav — desktop only */}
-          <nav className="hidden md:flex items-center gap-1 ml-4 flex-1">
-            <Button
-              size="sm"
-              className="rounded-full px-4 font-bold text-sm"
-              onClick={onGoHome}
-              data-ocid="nav.play_now.button"
-            >
-              <Play className="h-3 w-3 mr-1" /> Play Now
-            </Button>
-            {["Practice", "Games", "Challenges", "Reports", "Parents"].map(
-              (label) => (
-                <button
-                  type="button"
-                  key={label}
-                  className="px-3 py-1.5 text-sm font-semibold text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
-                  data-ocid={`nav.${label.toLowerCase()}.link`}
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50"
+      style={{
+        background:
+          "linear-gradient(90deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%)",
+      }}
+      data-ocid="footer.nav"
+    >
+      <div className="max-w-[1000px] mx-auto">
+        <div className="flex items-stretch justify-around h-16">
+          {tabs.map((tab) => {
+            const isActive =
+              activeScreen === tab.id ||
+              (activeScreen === "results" && tab.id === "dashboard");
+            return (
+              <button
+                type="button"
+                key={tab.id}
+                onClick={() => onNavigate(tab.id)}
+                className={`flex flex-col items-center justify-center flex-1 gap-1 py-2 transition-all duration-200 ${
+                  isActive ? "text-white" : "text-white/50 hover:text-white/80"
+                }`}
+                data-ocid={tab.ocid}
+              >
+                <span
+                  className={`text-xl leading-none transition-transform duration-200 ${
+                    isActive ? "scale-110" : ""
+                  }`}
                 >
-                  {label}
-                </button>
-              ),
-            )}
-          </nav>
-
-          {/* Right controls */}
-          <div className="flex items-center gap-2 ml-auto shrink-0">
-            <button
-              type="button"
-              className="p-2 rounded-full hover:bg-white/10 transition-colors hidden md:flex"
-              aria-label="Search"
-              data-ocid="header.search.button"
-            >
-              <Search className="h-4 w-4 text-white/70" />
-            </button>
-            <button
-              type="button"
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full hover:bg-white/10 transition-colors text-sm font-semibold text-white/70"
-              data-ocid="header.parent_portal.button"
-            >
-              <User className="h-4 w-4" /> Parent Portal
-            </button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full border-white/30 text-white font-bold text-sm hidden md:flex hover:bg-white/10"
-              data-ocid="header.logout.button"
-            >
-              <LogOut className="h-3 w-3 mr-1" /> Logout
-            </Button>
-            {/* Profile pill */}
-            <button
-              type="button"
-              className="flex items-center gap-2 bg-white/15 rounded-full px-3 py-1.5 cursor-pointer hover:bg-white/25 transition-colors"
-              data-ocid="header.profile.button"
-            >
-              <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white text-xs font-black">
-                {walletAddress ? walletAddress.slice(0, 2).toUpperCase() : "P"}
-              </div>
-              <div className="hidden sm:block">
-                <div className="text-xs font-black leading-none text-white">
-                  {walletAddress ? `${walletAddress.slice(0, 6)}…` : "Player"}{" "}
-                  (L7)
-                </div>
-                <div className="flex gap-0.5 mt-0.5">
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star
-                      key={s}
-                      className="h-2.5 w-2.5 fill-amber-400 text-amber-400"
-                    />
-                  ))}
-                </div>
-              </div>
-            </button>
-            {/* Hamburger — mobile only */}
-            <button
-              type="button"
-              className="md:hidden p-2 rounded-full hover:bg-white/10 transition-colors text-white"
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-              onClick={() => setMobileMenuOpen((v) => !v)}
-              data-ocid="header.hamburger.button"
-            >
-              {mobileMenuOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-            </button>
-          </div>
+                  {tab.icon}
+                </span>
+                <span
+                  className={`text-xs font-bold leading-none ${
+                    isActive ? "opacity-100" : "opacity-60"
+                  }`}
+                >
+                  {tab.label}
+                </span>
+                {isActive && (
+                  <motion.div
+                    layoutId="footer-indicator"
+                    className="absolute top-0 h-0.5 w-8 rounded-full bg-white"
+                    style={{ top: 0 }}
+                  />
+                )}
+              </button>
+            );
+          })}
         </div>
-      </header>
-
-      {/* Mobile dropdown menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.18 }}
-            className="fixed left-0 right-0 z-30 md:hidden bg-gradient-to-b from-indigo-700 via-purple-700 to-pink-600 shadow-xl border-b border-purple-800"
-            style={{ top: "calc(70px + 64px)" }}
-            data-ocid="header.mobile_menu.panel"
-          >
-            <nav className="max-w-[1000px] mx-auto px-4 py-4 flex flex-col gap-2">
-              <Button
-                size="default"
-                className="w-full rounded-full font-bold justify-start"
-                onClick={() => {
-                  onGoHome();
-                  closeMobileMenu();
-                }}
-                data-ocid="mobile_nav.play_now.button"
-              >
-                <Play className="h-4 w-4 mr-2" /> Play Now
-              </Button>
-              {["Practice", "Games", "Challenges", "Reports", "Parents"].map(
-                (label) => (
-                  <button
-                    type="button"
-                    key={label}
-                    className="w-full text-left px-4 py-3 text-sm font-semibold text-white/80 hover:text-white rounded-xl hover:bg-white/10 transition-colors"
-                    onClick={closeMobileMenu}
-                    data-ocid={`mobile_nav.${label.toLowerCase()}.link`}
-                  >
-                    {label}
-                  </button>
-                ),
-              )}
-              <div className="border-t border-white/20 my-1" />
-              <button
-                type="button"
-                className="w-full text-left flex items-center gap-2 px-4 py-3 text-sm font-semibold text-white/80 hover:text-white rounded-xl hover:bg-white/10 transition-colors"
-                onClick={closeMobileMenu}
-                data-ocid="mobile_nav.parent_portal.button"
-              >
-                <User className="h-4 w-4" /> Parent Portal
-              </button>
-              <button
-                type="button"
-                className="w-full text-left flex items-center gap-2 px-4 py-3 text-sm font-semibold text-white/80 hover:text-white rounded-xl hover:bg-white/10 transition-colors"
-                onClick={closeMobileMenu}
-                data-ocid="mobile_nav.logout.button"
-              >
-                <LogOut className="h-4 w-4" /> Logout
-              </button>
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+      </div>
+    </nav>
   );
 }
 
@@ -440,7 +345,6 @@ function Dashboard({
   setDifficulty: (d: Difficulty) => void;
 }) {
   const { data: stats, isLoading } = useGetStats();
-  const { data: leaderboard } = useGetLeaderboard();
 
   const level = Number(stats?.level ?? 1);
   const totalXp = Number(stats?.totalXp ?? 0);
@@ -459,7 +363,7 @@ function Dashboard({
     encouragingMessages[Math.floor(totalXp / 50) % encouragingMessages.length];
 
   return (
-    <div className="min-h-screen bg-background pt-[70px]">
+    <div className="min-h-screen bg-background pt-[70px] pb-20">
       {/* Hero Banner */}
       <section
         className="relative overflow-hidden"
@@ -468,7 +372,6 @@ function Dashboard({
             "linear-gradient(135deg, #dbeafe 0%, #e0f2fe 40%, #ccfbf1 100%)",
         }}
       >
-        {/* Decorative shapes */}
         <div className="absolute inset-0 pointer-events-none">
           {["⭐", "➕", "🌟", "✖️", "💫", "➗", "🔢", "🎯"].map((emoji, i) => (
             <span
@@ -487,7 +390,6 @@ function Dashboard({
         </div>
 
         <div className="max-w-[1000px] mx-auto px-4 py-10 flex flex-col md:flex-row items-center gap-8 relative z-10">
-          {/* Mascot */}
           <motion.div
             className="shrink-0 animate-float"
             initial={{ opacity: 0, x: -30 }}
@@ -497,11 +399,10 @@ function Dashboard({
             <img
               src="/assets/generated/math-mascot-transparent.dim_400x400.png"
               alt="MathWhiz mascot"
-              className="w-40 h-40 md:w-52 md:h-52 object-contain drop-shadow-xl"
+              className="w-36 h-36 md:w-48 md:h-48 object-contain drop-shadow-xl"
             />
           </motion.div>
 
-          {/* Welcome content */}
           <motion.div
             className="flex-1 text-center md:text-left"
             initial={{ opacity: 0, y: 20 }}
@@ -509,13 +410,13 @@ function Dashboard({
             transition={{ duration: 0.6, delay: 0.1 }}
           >
             <p className="text-sm font-bold text-primary uppercase tracking-wider mb-1">
-              Welcome Back, Ava! 👋
+              Welcome Back! 👋
             </p>
             <h1 className="text-3xl md:text-4xl font-black text-foreground leading-tight mb-2">
               Ready to <span className="text-primary">Master Math</span>?
             </h1>
             <p className="text-muted-foreground font-semibold mb-1">{msg}</p>
-            <div className="flex items-center gap-2 justify-center md:justify-start mb-5">
+            <div className="flex items-center gap-2 justify-center md:justify-start mb-5 flex-wrap">
               <div className="flex items-center gap-1 bg-white/70 rounded-full px-3 py-1">
                 <Zap className="h-4 w-4 text-amber-500" />
                 <span className="font-black text-sm">{totalXp} XP</span>
@@ -529,24 +430,14 @@ function Dashboard({
                 <span className="font-black text-sm">L{level}</span>
               </div>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start">
-              <Button
-                size="lg"
-                className="rounded-full px-8 text-base font-black shadow-lg hover:shadow-xl transition-all hover:scale-105"
-                onClick={onStartGame}
-                data-ocid="dashboard.play.primary_button"
-              >
-                <Play className="h-5 w-5 mr-2" /> Start Playing!
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="rounded-full px-8 text-base font-bold border-2 bg-white/70 hover:bg-white"
-                data-ocid="dashboard.leaderboard.secondary_button"
-              >
-                <Trophy className="h-5 w-5 mr-2 text-amber-500" /> Leaderboard
-              </Button>
-            </div>
+            <Button
+              size="lg"
+              className="rounded-full px-8 text-base font-black shadow-lg hover:shadow-xl transition-all hover:scale-105"
+              onClick={onStartGame}
+              data-ocid="dashboard.play.primary_button"
+            >
+              <Play className="h-5 w-5 mr-2" /> Start Playing!
+            </Button>
           </motion.div>
         </div>
       </section>
@@ -597,7 +488,7 @@ function Dashboard({
           ].map((stat) => (
             <Card
               key={stat.data}
-              className={`border-2 ${stat.color} shadow-card hover:shadow-card-hover transition-shadow`}
+              className={`border-2 ${stat.color}`}
               data-ocid={`stats.${stat.data}.card`}
             >
               <CardContent className="p-4">
@@ -616,7 +507,7 @@ function Dashboard({
 
         {/* Level XP bar */}
         <motion.div
-          className="bg-white rounded-2xl border-2 border-border p-5 shadow-card"
+          className="bg-white rounded-2xl border-2 border-border p-5"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.3 }}
@@ -638,32 +529,28 @@ function Dashboard({
           <Progress value={xpProgress} className="h-3 rounded-full" />
         </motion.div>
 
-        {/* Two-column: Math Adventure + Difficulty Selector */}
+        {/* Difficulty + Today's Challenge */}
         <div className="grid md:grid-cols-3 gap-6">
-          {/* Current Math Adventure */}
           <motion.div
             className="md:col-span-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.35 }}
           >
-            <Card className="border-2 border-primary/20 shadow-card h-full">
+            <Card className="border-2 border-primary/20 h-full">
               <CardContent className="p-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
                     <span className="text-xl">🎮</span>
                   </div>
                   <div>
-                    <h2 className="font-black text-lg">
-                      Current Math Adventure
-                    </h2>
+                    <h2 className="font-black text-lg">Choose Difficulty</h2>
                     <p className="text-sm text-muted-foreground font-semibold">
-                      Select difficulty and start!
+                      Select and start!
                     </p>
                   </div>
                 </div>
 
-                {/* Difficulty selector */}
                 <div
                   className="grid grid-cols-3 gap-3 mb-5"
                   data-ocid="difficulty.select"
@@ -735,7 +622,7 @@ function Dashboard({
             transition={{ duration: 0.5, delay: 0.4 }}
           >
             <Card
-              className="border-2 border-secondary/30 shadow-card h-full"
+              className="border-2 border-secondary/30 h-full"
               style={{ background: "linear-gradient(145deg, #f0fdf9, #fff)" }}
             >
               <CardContent className="p-6 flex flex-col h-full">
@@ -827,11 +714,7 @@ function Dashboard({
               return (
                 <Card
                   key={badge.id}
-                  className={`border-2 transition-all ${
-                    earned
-                      ? "border-amber-300 shadow-card"
-                      : "border-border opacity-50"
-                  }`}
+                  className={`border-2 transition-all ${earned ? "border-amber-300" : "border-border opacity-50"}`}
                   data-ocid={`badge.item.${i + 1}`}
                 >
                   <CardContent className="p-4 text-center">
@@ -855,68 +738,12 @@ function Dashboard({
             })}
           </div>
         </motion.div>
-
-        {/* Leaderboard */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-        >
-          <h2 className="font-black text-xl mb-4">🏆 Leaderboard</h2>
-          <Card className="border-2 border-border shadow-card">
-            <CardContent className="p-0">
-              {leaderboard && leaderboard.length > 0 ? (
-                leaderboard.slice(0, 5).map(([principal, score], i) => (
-                  <div
-                    key={principal.toString()}
-                    className="flex items-center gap-4 px-6 py-4 border-b border-border last:border-0"
-                    data-ocid={`leaderboard.item.${i + 1}`}
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-sm ${
-                        i === 0
-                          ? "bg-amber-400 text-white"
-                          : i === 1
-                            ? "bg-slate-300 text-slate-700"
-                            : i === 2
-                              ? "bg-amber-600/80 text-white"
-                              : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {i + 1}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-black text-sm">
-                        {principal.toString().slice(0, 12)}…
-                      </div>
-                    </div>
-                    <div className="font-black text-primary">
-                      {Number(score)} pts
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div
-                  className="text-center py-10 text-muted-foreground"
-                  data-ocid="leaderboard.empty_state"
-                >
-                  <Trophy className="h-10 w-10 mx-auto mb-3 opacity-30" />
-                  <p className="font-bold">No scores yet — be the first!</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border mt-12 bg-white">
-        <div className="max-w-[1000px] mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-            <span className="text-xl">🚀</span>
-            <span>MathWhiz Kid — Making Math Fun Since 2024</span>
-          </div>
-          <div className="text-sm text-muted-foreground">
+      <footer className="border-t border-border mt-8 bg-white">
+        <div className="max-w-[1000px] mx-auto px-4 py-5 text-center">
+          <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()}. Built with ❤ using{" "}
             <a
               href={`https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(window.location.hostname)}`}
@@ -924,7 +751,7 @@ function Dashboard({
             >
               caffeine.ai
             </a>
-          </div>
+          </p>
         </div>
       </footer>
     </div>
@@ -946,6 +773,7 @@ const ENCOURAGEMENTS_WRONG = [
   "You got this! 🎯",
   "Don't give up! 🌈",
 ];
+
 function GameScreen({
   difficulty,
   onFinish,
@@ -985,7 +813,6 @@ function GameScreen({
       clearTimer();
       const nextIndex = questionIndex + 1;
       if (nextIndex >= 10) {
-        // Check badges
         const newBadges: string[] = [];
         if (currentScore === 10) newBadges.push("perfect_score");
         if (tLeft > 20) newBadges.push("speed_demon");
@@ -1015,9 +842,7 @@ function GameScreen({
       if (selected !== null) return;
       clearTimer();
       setSelected(choice);
-
       const isCorrect = choice === currentQ.answer;
-
       if (isCorrect) {
         const newStreak = streak + 1;
         const newMaxStreak = Math.max(maxStreak, newStreak);
@@ -1064,7 +889,6 @@ function GameScreen({
     ],
   );
 
-  // Timer
   // biome-ignore lint/correctness/useExhaustiveDependencies: timer depends on questionIndex reset
   useEffect(() => {
     if (selected !== null) return;
@@ -1072,7 +896,7 @@ function GameScreen({
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(timerRef.current!);
-          handleAnswer(-1); // Force wrong
+          handleAnswer(-1);
           return 0;
         }
         return prev - 1;
@@ -1089,7 +913,7 @@ function GameScreen({
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col pt-[70px]">
+    <div className="min-h-screen bg-background flex flex-col pt-[70px] pb-20">
       {/* Game top bar */}
       <div className="bg-white border-b border-border px-4 py-3">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -1126,9 +950,8 @@ function GameScreen({
       {/* Main game area */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
         <div className="w-full max-w-lg">
-          {/* Timer + Question */}
           <motion.div
-            className="bg-white rounded-3xl border-2 border-border shadow-card p-8 mb-6 text-center"
+            className="bg-white rounded-3xl border-2 border-border p-8 mb-6 text-center"
             key={questionIndex}
             initial={{ opacity: 0, scale: 0.92 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -1138,7 +961,6 @@ function GameScreen({
             <div className="flex justify-center mb-6">
               <CircularTimer timeLeft={timeLeft} />
             </div>
-
             <div className="flex items-center justify-center gap-3 mb-2">
               <span className="text-5xl font-black">{currentQ.a}</span>
               <span
@@ -1158,17 +980,13 @@ function GameScreen({
                 ?
               </span>
             </div>
-
-            {/* Encouragement */}
             <AnimatePresence>
               {encouragement && (
                 <motion.div
                   initial={{ opacity: 0, y: -10, scale: 0.8 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0 }}
-                  className={`mt-3 text-lg font-black ${
-                    feedback === "correct" ? "text-emerald-600" : "text-red-500"
-                  }`}
+                  className={`mt-3 text-lg font-black ${feedback === "correct" ? "text-emerald-600" : "text-red-500"}`}
                 >
                   {feedback === "correct" ? "✓ " : "✗ "}
                   {encouragement}
@@ -1177,7 +995,6 @@ function GameScreen({
             </AnimatePresence>
           </motion.div>
 
-          {/* Answer choices */}
           <div
             className="grid grid-cols-2 gap-4"
             data-ocid="game.answers.panel"
@@ -1191,7 +1008,7 @@ function GameScreen({
                 "rounded-2xl border-2 p-5 text-center text-2xl font-black transition-all cursor-pointer ";
               if (!showFeedback) {
                 buttonClass +=
-                  "bg-white border-border hover:border-primary hover:bg-primary/5 hover:scale-105 active:scale-95 shadow-card hover:shadow-card-hover";
+                  "bg-white border-border hover:border-primary hover:bg-primary/5 hover:scale-105 active:scale-95";
               } else if (isCorrect) {
                 buttonClass +=
                   "bg-emerald-500 border-emerald-500 text-white scale-105 shadow-lg";
@@ -1240,7 +1057,6 @@ function ResultsScreen({
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: run once on mount
   useEffect(() => {
-    // Persist to backend
     const badgesToSave = result.newBadges.map((id) => {
       const def = BADGE_DEFS.find((b) => b.id === id);
       return { name: def?.name ?? id, description: def?.description ?? "" };
@@ -1251,7 +1067,6 @@ function ResultsScreen({
       streak: BigInt(result.streak),
       badges: badgesToSave,
     });
-
     if (isPerfect) {
       toast.success("Perfect Score! Amazing job! 🎉");
       const timer = setTimeout(() => setShowConfetti(false), 5000);
@@ -1291,7 +1106,7 @@ function ResultsScreen({
               };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 pt-[70px] pb-10">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4 pt-[70px] pb-20">
       {showConfetti && <ConfettiEffect />}
 
       <motion.div
@@ -1301,10 +1116,9 @@ function ResultsScreen({
         transition={{ duration: 0.5, type: "spring" }}
       >
         <Card
-          className="border-2 border-border shadow-card overflow-hidden"
+          className="border-2 border-border overflow-hidden"
           data-ocid="results.panel"
         >
-          {/* Score header */}
           <div
             className="text-center py-8 px-6"
             style={{
@@ -1329,7 +1143,6 @@ function ResultsScreen({
           </div>
 
           <CardContent className="p-6 space-y-5">
-            {/* Score breakdown */}
             <div className="grid grid-cols-3 gap-3 text-center">
               {[
                 {
@@ -1351,11 +1164,7 @@ function ResultsScreen({
                   color: "text-red-600",
                 },
               ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="bg-muted rounded-2xl p-3"
-                  data-ocid={`results.${stat.label.toLowerCase().replace(" ", "_")}.card`}
-                >
+                <div key={stat.label} className="bg-muted rounded-2xl p-3">
                   <div className="text-2xl mb-1">{stat.icon}</div>
                   <div className={`text-xl font-black ${stat.color}`}>
                     {stat.value}
@@ -1367,7 +1176,6 @@ function ResultsScreen({
               ))}
             </div>
 
-            {/* New badges */}
             {result.newBadges.length > 0 && (
               <div>
                 <h3 className="font-black text-sm text-muted-foreground uppercase tracking-wider mb-3">
@@ -1396,29 +1204,787 @@ function ResultsScreen({
               </div>
             )}
 
-            {/* CTA buttons */}
-            <div className="flex flex-col gap-3">
+            <div className="flex gap-3 pt-2">
               <Button
                 size="lg"
-                className="w-full rounded-full font-black text-base shadow-lg hover:shadow-xl transition-all hover:scale-[1.02]"
+                className="flex-1 rounded-full font-black"
                 onClick={onPlayAgain}
                 data-ocid="results.play_again.primary_button"
               >
-                <RotateCcw className="h-5 w-5 mr-2" /> Play Again!
+                <RotateCcw className="h-4 w-4 mr-2" /> Play Again
               </Button>
               <Button
                 size="lg"
                 variant="outline"
-                className="w-full rounded-full font-bold text-base border-2"
+                className="flex-1 rounded-full font-bold border-2"
                 onClick={onGoHome}
                 data-ocid="results.home.secondary_button"
               >
-                🏠 Back to Dashboard
+                🏠 Home
               </Button>
             </div>
           </CardContent>
         </Card>
       </motion.div>
+    </div>
+  );
+}
+
+// ─── Leaderboard Screen ───────────────────────────────────────────────────────
+function LeaderboardScreen() {
+  const { data: leaderboard, isLoading } = useGetLeaderboard();
+
+  const medalColors = [
+    "bg-amber-400 text-white shadow-md",
+    "bg-slate-300 text-slate-700 shadow-md",
+    "bg-amber-600/80 text-white shadow-md",
+  ];
+  const medalEmojis = ["🥇", "🥈", "🥉"];
+
+  return (
+    <div className="min-h-screen bg-background pt-[70px] pb-20">
+      {/* Header */}
+      <div
+        className="sticky top-[70px] z-30 border-b border-purple-700/30"
+        style={{
+          background:
+            "linear-gradient(135deg, #dbeafe 0%, #e9d5ff 50%, #fce7f3 100%)",
+        }}
+      >
+        <div className="max-w-[1000px] mx-auto px-4 py-5">
+          <h1 className="text-2xl font-black">🏆 Leaderboard</h1>
+          <p className="text-sm text-muted-foreground font-semibold mt-0.5">
+            Top players by total XP
+          </p>
+        </div>
+      </div>
+
+      <main className="max-w-[1000px] mx-auto px-4 py-8">
+        {isLoading ? (
+          <div className="space-y-3" data-ocid="leaderboard.loading_state">
+            {["sk1", "sk2", "sk3", "sk4", "sk5"].map((sk) => (
+              <div
+                key={sk}
+                className="flex items-center gap-4 p-4 bg-white rounded-2xl border-2 border-border"
+              >
+                <Skeleton className="w-10 h-10 rounded-full" />
+                <Skeleton className="flex-1 h-5" />
+                <Skeleton className="w-16 h-5" />
+              </div>
+            ))}
+          </div>
+        ) : leaderboard && leaderboard.length > 0 ? (
+          <div className="space-y-3" data-ocid="leaderboard.list">
+            {leaderboard.slice(0, 10).map(([principal, score], i) => (
+              <motion.div
+                key={principal.toString()}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.05 }}
+                className={`flex items-center gap-4 px-5 py-4 rounded-2xl border-2 ${
+                  i === 0
+                    ? "border-amber-300 bg-amber-50"
+                    : i === 1
+                      ? "border-slate-300 bg-slate-50"
+                      : i === 2
+                        ? "border-amber-600/40 bg-orange-50"
+                        : "border-border bg-white"
+                }`}
+                data-ocid={`leaderboard.item.${i + 1}`}
+              >
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-black text-sm shrink-0 ${
+                    i < 3 ? medalColors[i] : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  {i < 3 ? medalEmojis[i] : i + 1}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-black text-sm truncate">
+                    {principal.toString().length > 20
+                      ? `${principal.toString().slice(0, 10)}…${principal.toString().slice(-6)}`
+                      : principal.toString()}
+                  </div>
+                  {i === 0 && (
+                    <span className="text-xs font-bold text-amber-600">
+                      👑 Champion
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <Zap className="h-4 w-4 text-amber-500" />
+                  <span className="font-black text-primary text-sm">
+                    {Number(score)} pts
+                  </span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <div
+            className="text-center py-16"
+            data-ocid="leaderboard.empty_state"
+          >
+            <Trophy className="h-16 w-16 mx-auto mb-4 opacity-20" />
+            <h3 className="font-black text-lg text-foreground mb-1">
+              No scores yet!
+            </h3>
+            <p className="text-muted-foreground font-semibold">
+              Be the first to claim the top spot 🚀
+            </p>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
+
+// ─── Stats Screen ─────────────────────────────────────────────────────────────
+function StatsScreen({ onPlayGame }: { onPlayGame: () => void }) {
+  const { data: stats, isLoading } = useGetStats();
+
+  const level = Number(stats?.level ?? 1);
+  const totalXp = Number(stats?.totalXp ?? 0);
+  const streak = Number(stats?.streak ?? 0);
+  const highScore = Number(stats?.highScore ?? 0);
+  const badges = stats?.badges ?? [];
+  const xpForLevel = level * 100;
+  const xpProgress = Math.min(((totalXp % xpForLevel) / xpForLevel) * 100, 100);
+
+  return (
+    <div className="min-h-screen bg-background pt-[70px] pb-20">
+      {/* Header */}
+      <div
+        className="sticky top-[70px] z-30 border-b border-blue-200"
+        style={{
+          background:
+            "linear-gradient(135deg, #dbeafe 0%, #e0f2fe 60%, #ccfbf1 100%)",
+        }}
+      >
+        <div className="max-w-[1000px] mx-auto px-4 py-5">
+          <h1 className="text-2xl font-black">📊 Your Stats</h1>
+          <p className="text-sm text-muted-foreground font-semibold mt-0.5">
+            Track your math journey
+          </p>
+        </div>
+      </div>
+
+      <main className="max-w-[1000px] mx-auto px-4 py-8 space-y-8">
+        {/* Level card */}
+        {isLoading ? (
+          <div className="space-y-4" data-ocid="stats.loading_state">
+            <Skeleton className="h-28 rounded-2xl" />
+            <div className="grid grid-cols-2 gap-4">
+              <Skeleton className="h-24 rounded-2xl" />
+              <Skeleton className="h-24 rounded-2xl" />
+              <Skeleton className="h-24 rounded-2xl" />
+              <Skeleton className="h-24 rounded-2xl" />
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Level + XP */}
+            <motion.div
+              className="bg-white rounded-2xl border-2 border-primary/20 p-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              data-ocid="stats.level.card"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 rounded-full bg-primary flex items-center justify-center text-white font-black text-xl shadow-lg">
+                  L{level}
+                </div>
+                <div>
+                  <h2 className="font-black text-2xl">Level {level}</h2>
+                  <p className="text-muted-foreground font-semibold">
+                    {totalXp} total XP earned
+                  </p>
+                </div>
+                <div className="ml-auto">
+                  <Star className="h-8 w-8 fill-amber-400 text-amber-400" />
+                </div>
+              </div>
+              <div className="mb-2 flex justify-between text-xs font-bold text-muted-foreground">
+                <span>XP Progress</span>
+                <span>
+                  {totalXp % xpForLevel} / {xpForLevel} to Level {level + 1}
+                </span>
+              </div>
+              <Progress value={xpProgress} className="h-4 rounded-full" />
+            </motion.div>
+
+            {/* Stats grid */}
+            <motion.div
+              className="grid grid-cols-2 md:grid-cols-4 gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              {[
+                {
+                  label: "Total XP",
+                  value: totalXp,
+                  icon: <Zap className="h-6 w-6 text-amber-500" />,
+                  color: "bg-amber-50 border-amber-200",
+                  ocid: "stats.xp.card",
+                },
+                {
+                  label: "High Score",
+                  value: `${highScore}/10`,
+                  icon: <Trophy className="h-6 w-6 text-amber-500" />,
+                  color: "bg-amber-50 border-amber-200",
+                  ocid: "stats.high_score.card",
+                },
+                {
+                  label: "Best Streak",
+                  value: `${streak}x`,
+                  icon: <Flame className="h-6 w-6 text-red-500" />,
+                  color: "bg-red-50 border-red-200",
+                  ocid: "stats.streak.card",
+                },
+                {
+                  label: "Badges",
+                  value: `${badges.length}/${BADGE_DEFS.length}`,
+                  icon: (
+                    <Medal
+                      className="h-6 w-6"
+                      style={{ color: "oklch(0.58 0.22 285)" }}
+                    />
+                  ),
+                  color: "bg-purple-50 border-purple-200",
+                  ocid: "stats.badges.card",
+                },
+              ].map((stat) => (
+                <Card
+                  key={stat.label}
+                  className={`border-2 ${stat.color}`}
+                  data-ocid={stat.ocid}
+                >
+                  <CardContent className="p-4 text-center">
+                    <div className="flex justify-center mb-2">{stat.icon}</div>
+                    <div className="text-2xl font-black">{stat.value}</div>
+                    <div className="text-xs font-semibold text-muted-foreground mt-1">
+                      {stat.label}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </motion.div>
+
+            {/* Badges full list */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+            >
+              <h2 className="font-black text-xl mb-4">🏅 All Badges</h2>
+              <div
+                className="grid grid-cols-2 md:grid-cols-4 gap-4"
+                data-ocid="stats.badges.list"
+              >
+                {BADGE_DEFS.map((badge, i) => {
+                  const earned = badges.some((b) => b.name === badge.name);
+                  return (
+                    <Card
+                      key={badge.id}
+                      className={`border-2 transition-all ${
+                        earned
+                          ? "border-amber-300 bg-amber-50/30"
+                          : "border-border opacity-50 grayscale"
+                      }`}
+                      data-ocid={`stats.badge.item.${i + 1}`}
+                    >
+                      <CardContent className="p-4 text-center">
+                        <div className="text-3xl mb-2">{badge.icon}</div>
+                        <div className="font-black text-sm">{badge.name}</div>
+                        <div className="text-xs text-muted-foreground font-semibold mt-1">
+                          {badge.description}
+                        </div>
+                        {earned ? (
+                          <Badge className="mt-2 text-xs bg-amber-100 text-amber-700">
+                            ✓ Earned
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="mt-2 text-xs">
+                            Locked
+                          </Badge>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </motion.div>
+
+            {/* CTA */}
+            <motion.div
+              className="text-center py-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
+              <p className="text-muted-foreground font-semibold mb-4">
+                Keep playing to earn more badges and XP!
+              </p>
+              <Button
+                size="lg"
+                className="rounded-full px-10 font-black shadow-lg hover:scale-105 transition-all"
+                onClick={onPlayGame}
+                data-ocid="stats.play.primary_button"
+              >
+                <Play className="h-5 w-5 mr-2" /> Play to Earn More!
+              </Button>
+            </motion.div>
+          </>
+        )}
+      </main>
+    </div>
+  );
+}
+
+// ─── Parents Screen ───────────────────────────────────────────────────────────
+function ParentsScreen() {
+  const { data: stats, isLoading } = useGetStats();
+  const [pin, setPin] = useState("");
+  const [unlocked, setUnlocked] = useState(false);
+  const [pinError, setPinError] = useState(false);
+  const [newPinInput, setNewPinInput] = useState("");
+  const [pinChangeSuccess, setPinChangeSuccess] = useState(false);
+
+  const level = Number(stats?.level ?? 1);
+  const totalXp = Number(stats?.totalXp ?? 0);
+  const highScore = Number(stats?.highScore ?? 0);
+  const streak = Number(stats?.streak ?? 0);
+  const badges = stats?.badges ?? [];
+
+  const currentPin = localStorage.getItem("parentPin") || "1234";
+
+  const handlePinInput = (digit: string) => {
+    if (pinError) setPinError(false);
+    if (pin.length >= 4) return;
+    const newPin = pin + digit;
+    setPin(newPin);
+    if (newPin.length === 4) {
+      setTimeout(() => {
+        if (newPin === currentPin) {
+          setUnlocked(true);
+          setPin("");
+        } else {
+          setPinError(true);
+          setPin("");
+        }
+      }, 200);
+    }
+  };
+
+  const handleBackspace = () => {
+    if (pinError) setPinError(false);
+    setPin((prev) => prev.slice(0, -1));
+  };
+
+  const handleLock = () => {
+    setUnlocked(false);
+    setPin("");
+    setPinError(false);
+    setNewPinInput("");
+    setPinChangeSuccess(false);
+  };
+
+  const handleNewPinInput = (digit: string) => {
+    if (newPinInput.length >= 4) return;
+    const updated = newPinInput + digit;
+    setNewPinInput(updated);
+    if (updated.length === 4) {
+      setTimeout(() => {
+        localStorage.setItem("parentPin", updated);
+        setNewPinInput("");
+        setPinChangeSuccess(true);
+        setTimeout(() => setPinChangeSuccess(false), 2000);
+      }, 200);
+    }
+  };
+
+  const handleNewPinBackspace = () => {
+    setNewPinInput((prev) => prev.slice(0, -1));
+  };
+
+  if (!unlocked) {
+    return (
+      <div className="min-h-screen bg-background pt-[70px] pb-20 flex flex-col">
+        {/* Header */}
+        <div
+          className="sticky top-[70px] z-30 border-b border-pink-200"
+          style={{
+            background: "linear-gradient(135deg, #fce7f3 0%, #e9d5ff 100%)",
+          }}
+        >
+          <div className="max-w-[1000px] mx-auto px-4 py-5">
+            <h1 className="text-2xl font-black">👨‍👩‍👧 Parents</h1>
+            <p className="text-sm text-muted-foreground font-semibold mt-0.5">
+              PIN protected area
+            </p>
+          </div>
+        </div>
+
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-8">
+          <motion.div
+            className="w-full max-w-sm"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <Card
+              className="border-2 border-border shadow-lg"
+              data-ocid="parents.dialog"
+            >
+              <CardContent className="p-8">
+                <div className="text-center mb-6">
+                  <div className="text-5xl mb-3">🔒</div>
+                  <h2 className="font-black text-xl">Parent Access</h2>
+                  <p className="text-sm text-muted-foreground font-semibold mt-1">
+                    Enter your 4-digit PIN to continue
+                  </p>
+                </div>
+
+                {/* PIN dots */}
+                <div className="flex justify-center gap-3 mb-6">
+                  {[0, 1, 2, 3].map((i) => (
+                    <div
+                      key={i}
+                      className={`w-4 h-4 rounded-full border-2 transition-all ${
+                        pinError
+                          ? "border-red-400 bg-red-300 animate-shake"
+                          : pin.length > i
+                            ? "border-primary bg-primary"
+                            : "border-border bg-white"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                {pinError && (
+                  <p
+                    className="text-center text-red-500 font-bold text-sm mb-4"
+                    data-ocid="parents.error_state"
+                  >
+                    ❌ Wrong PIN. Try again.
+                  </p>
+                )}
+
+                {/* Number pad */}
+                <div
+                  className="grid grid-cols-3 gap-3"
+                  data-ocid="parents.input"
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
+                    <button
+                      key={digit}
+                      type="button"
+                      className="h-14 rounded-2xl border-2 border-border bg-white font-black text-xl hover:border-primary hover:bg-primary/5 active:scale-95 transition-all"
+                      onClick={() => handlePinInput(String(digit))}
+                      data-ocid={"parents.pin.button"}
+                    >
+                      {digit}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    className="h-14 rounded-2xl border-2 border-border bg-white font-bold text-sm text-muted-foreground hover:border-destructive hover:bg-red-50 active:scale-95 transition-all"
+                    onClick={handleBackspace}
+                    data-ocid="parents.backspace.button"
+                  >
+                    ⌫
+                  </button>
+                  <button
+                    type="button"
+                    className="h-14 rounded-2xl border-2 border-border bg-white font-black text-xl hover:border-primary hover:bg-primary/5 active:scale-95 transition-all"
+                    onClick={() => handlePinInput("0")}
+                    data-ocid="parents.pin.button"
+                  >
+                    0
+                  </button>
+                  <div />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  // Unlocked view
+  return (
+    <div className="min-h-screen bg-background pt-[70px] pb-20">
+      {/* Header */}
+      <div
+        className="sticky top-[70px] z-30 border-b border-pink-200"
+        style={{
+          background: "linear-gradient(135deg, #fce7f3 0%, #e9d5ff 100%)",
+        }}
+      >
+        <div className="max-w-[1000px] mx-auto px-4 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-black">👨‍👩‍👧 Parents</h1>
+            <p className="text-sm text-muted-foreground font-semibold mt-0.5">
+              Your child's progress
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="rounded-full font-bold border-2"
+            onClick={handleLock}
+            data-ocid="parents.lock.button"
+          >
+            🔒 Lock
+          </Button>
+        </div>
+      </div>
+
+      <main className="max-w-[1000px] mx-auto px-4 py-8 space-y-8">
+        {isLoading ? (
+          <div className="space-y-4" data-ocid="parents.loading_state">
+            <Skeleton className="h-32 rounded-2xl" />
+            <div className="grid grid-cols-2 gap-4">
+              <Skeleton className="h-24 rounded-2xl" />
+              <Skeleton className="h-24 rounded-2xl" />
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Child overview */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <Card
+                className="border-2 border-pink-200 bg-pink-50/30"
+                data-ocid="parents.overview.card"
+              >
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-4 mb-5">
+                    <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-white font-black text-lg shadow">
+                      L{level}
+                    </div>
+                    <div>
+                      <h2 className="font-black text-lg">
+                        Your Child's Progress
+                      </h2>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        {["s1", "s2", "s3", "s4", "s5"].map((sk) => (
+                          <Star
+                            key={sk}
+                            className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                      { label: "Level", value: level, icon: "⭐" },
+                      { label: "Total XP", value: totalXp, icon: "⚡" },
+                      {
+                        label: "High Score",
+                        value: `${highScore}/10`,
+                        icon: "🎯",
+                      },
+                      { label: "Best Streak", value: `${streak}x`, icon: "🔥" },
+                    ].map((stat) => (
+                      <div
+                        key={stat.label}
+                        className="bg-white rounded-xl p-3 border border-border text-center"
+                      >
+                        <div className="text-xl mb-1">{stat.icon}</div>
+                        <div className="font-black text-lg">{stat.value}</div>
+                        <div className="text-xs text-muted-foreground font-semibold">
+                          {stat.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Badges earned */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <h2 className="font-black text-xl mb-4">
+                🏅 Badges Earned ({badges.length}/{BADGE_DEFS.length})
+              </h2>
+              <div
+                className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                data-ocid="parents.badges.list"
+              >
+                {BADGE_DEFS.map((badge, i) => {
+                  const earned = badges.some((b) => b.name === badge.name);
+                  return (
+                    <Card
+                      key={badge.id}
+                      className={`border-2 ${earned ? "border-amber-300" : "border-border opacity-50"}`}
+                      data-ocid={`parents.badge.item.${i + 1}`}
+                    >
+                      <CardContent className="p-3 text-center">
+                        <div
+                          className={`text-2xl mb-1 ${earned ? "" : "grayscale"}`}
+                        >
+                          {badge.icon}
+                        </div>
+                        <div className="font-black text-xs">{badge.name}</div>
+                        {earned && (
+                          <Badge className="mt-1 text-xs bg-amber-100 text-amber-700">
+                            ✓
+                          </Badge>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </motion.div>
+
+            {/* Tips for parents */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+            >
+              <h2 className="font-black text-xl mb-4">💡 Tips for Parents</h2>
+              <div className="space-y-3" data-ocid="parents.tips.list">
+                {[
+                  {
+                    tip: "Celebrate every win",
+                    detail:
+                      "Even small improvements deserve recognition. Positive reinforcement builds confidence and keeps kids motivated to learn.",
+                    icon: "🎉",
+                  },
+                  {
+                    tip: "Short sessions are better",
+                    detail:
+                      "10–15 minutes of focused practice is more effective than hour-long sessions. Keep it fun and stop before frustration sets in.",
+                    icon: "⏱️",
+                  },
+                  {
+                    tip: "Connect math to daily life",
+                    detail:
+                      "Count objects around the house, measure ingredients while cooking, or calculate change at a store. Real-world math sticks!",
+                    icon: "🌍",
+                  },
+                  {
+                    tip: "Let them struggle a little",
+                    detail:
+                      "Productive struggle builds resilience. Give hints rather than answers, and praise the effort, not just the result.",
+                    icon: "💪",
+                  },
+                ].map((item, i) => (
+                  <div
+                    key={item.tip}
+                    className="flex gap-4 p-4 bg-white rounded-2xl border-2 border-border"
+                    data-ocid={`parents.tips.item.${i + 1}`}
+                  >
+                    <span className="text-2xl shrink-0">{item.icon}</span>
+                    <div>
+                      <div className="font-black text-sm">{item.tip}</div>
+                      <div className="text-sm text-muted-foreground font-semibold mt-0.5">
+                        {item.detail}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Change PIN */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
+              <Card
+                className="border-2 border-purple-200 bg-purple-50/30"
+                data-ocid="parents.change_pin.card"
+              >
+                <CardContent className="p-6">
+                  <h2 className="font-black text-xl mb-1">🔑 Change PIN</h2>
+                  <p className="text-sm text-muted-foreground font-semibold mb-5">
+                    Enter a new 4-digit PIN
+                  </p>
+
+                  {pinChangeSuccess ? (
+                    <div
+                      className="flex flex-col items-center py-6 gap-2"
+                      data-ocid="parents.change_pin.success_state"
+                    >
+                      <div className="text-4xl">✅</div>
+                      <p className="font-black text-lg text-green-600">
+                        PIN updated!
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* New PIN dots */}
+                      <div className="flex justify-center gap-3 mb-5">
+                        {[0, 1, 2, 3].map((i) => (
+                          <div
+                            key={i}
+                            className={`w-3.5 h-3.5 rounded-full border-2 transition-all ${
+                              newPinInput.length > i
+                                ? "border-purple-500 bg-purple-500"
+                                : "border-border bg-white"
+                            }`}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Compact number pad */}
+                      <div
+                        className="grid grid-cols-3 gap-2 max-w-[240px] mx-auto"
+                        data-ocid="parents.new_pin.input"
+                      >
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((digit) => (
+                          <button
+                            key={digit}
+                            type="button"
+                            className="h-11 rounded-xl border-2 border-border bg-white font-black text-lg hover:border-purple-400 hover:bg-purple-50 active:scale-95 transition-all"
+                            onClick={() => handleNewPinInput(String(digit))}
+                            data-ocid="parents.new_pin.button"
+                          >
+                            {digit}
+                          </button>
+                        ))}
+                        <button
+                          type="button"
+                          className="h-11 rounded-xl border-2 border-border bg-white font-bold text-sm text-muted-foreground hover:border-destructive hover:bg-red-50 active:scale-95 transition-all"
+                          onClick={handleNewPinBackspace}
+                          data-ocid="parents.new_pin_backspace.button"
+                        >
+                          ⌫
+                        </button>
+                        <button
+                          type="button"
+                          className="h-11 rounded-xl border-2 border-border bg-white font-black text-lg hover:border-purple-400 hover:bg-purple-50 active:scale-95 transition-all"
+                          onClick={() => handleNewPinInput("0")}
+                          data-ocid="parents.new_pin.button"
+                        >
+                          0
+                        </button>
+                        <div />
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          </>
+        )}
+      </main>
     </div>
   );
 }
@@ -1432,8 +1998,8 @@ function MathApp() {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: connect once on mount
   useEffect(() => {
-    sdk.connection();
-  }, [sdk.connection]);
+    sdk.connection("#7c3aed");
+  }, []);
 
   const handleStartGame = () => setScreen("game");
   const handleFinish = (result: GameResult) => {
@@ -1442,6 +2008,14 @@ function MathApp() {
   };
   const handlePlayAgain = () => setScreen("game");
   const handleGoHome = () => setScreen("dashboard");
+
+  const handleNavigate = (s: Screen) => {
+    if (s === "dashboard") handleGoHome();
+    else setScreen(s);
+  };
+
+  // Unused variable suppressed
+  void walletAddress;
 
   if (isConnecting) {
     return (
@@ -1462,12 +2036,10 @@ function MathApp() {
     );
   }
 
+  const showFooterNav = screen !== "game";
+
   return (
     <>
-      <AppHeader
-        onGoHome={handleGoHome}
-        walletAddress={walletAddress ?? undefined}
-      />
       <AnimatePresence mode="wait">
         {screen === "dashboard" && (
           <motion.div
@@ -1510,7 +2082,45 @@ function MathApp() {
             />
           </motion.div>
         )}
+        {screen === "leaderboard" && (
+          <motion.div
+            key="leaderboard"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <LeaderboardScreen />
+          </motion.div>
+        )}
+        {screen === "stats" && (
+          <motion.div
+            key="stats"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <StatsScreen onPlayGame={handleStartGame} />
+          </motion.div>
+        )}
+        {screen === "parents" && (
+          <motion.div
+            key="parents"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ParentsScreen />
+          </motion.div>
+        )}
       </AnimatePresence>
+
+      {showFooterNav && (
+        <FloatingFooterNav activeScreen={screen} onNavigate={handleNavigate} />
+      )}
+
       <Toaster />
     </>
   );

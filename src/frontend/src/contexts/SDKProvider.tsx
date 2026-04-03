@@ -659,7 +659,7 @@ export function SDKProvider({ children }: { children: ReactNode }) {
     stopInterval();
     resolvedRef.current = false;
     setIsConnecting(true);
-    const send = () => sendCommandFn({ type: "connection" });
+    const send = () => sendCommandFn({ type: "connection", navbg: "#7c3aed" });
     send();
     intervalRef.current = setInterval(send, 1000);
   }, [sendCommandFn, stopInterval]);
